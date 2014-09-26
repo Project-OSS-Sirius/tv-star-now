@@ -913,10 +913,6 @@ class ScheduleInfo(object):
 
         for i, chanName in enumerate(sorted(self._chanNameIds), 1):
             chanId = self._chanNameIds[chanName]
-
-            if chanId != 107:
-                continue
-
             self._logger.info("Fetching schedule information: chanName={}, "
                               "chanId={} ({}/{})".format(chanName, chanId, i,
                                                          numChans))
@@ -936,8 +932,6 @@ class ScheduleInfo(object):
                     "schedule": scheduleElem["daySchedule"]
                 }
                 self._writeChanSchedule(chanSchedule)
-
-            break
 
     def _combineSchedule(self, schedule, auxSchedule):
         """
@@ -986,10 +980,14 @@ class ScheduleInfo(object):
 
     def _writeChanSchedule(self, chanSchedule):
         """
-        Write channel schedule to output file.
+        Decompose and write channel schedule to output file.
         """
 
-        self._outputFile.write("{}\n".format(ujson.dumps(chanSchedule,
-                                                         ensure_ascii=
-                                                         False)))
+        for scheduleItem in chanSchedule["schedule"]:
+            scheduleItem["channelId"] = chanSchedule["channelId"]
+            scheduleItem["channelName"] = chanSchedule["channelName"]
+            scheduleItem["date"] = chanSchedule["date"]
+            self._outputFile.write("{}\n".format(ujson.dumps(scheduleItem,
+                                                             ensure_ascii=
+                                                             False)))
         self._outputFile.flush()
