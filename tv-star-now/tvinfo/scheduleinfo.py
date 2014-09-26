@@ -465,7 +465,7 @@ class ScheduleInfo(object):
             }
         },
         u"종합편성채널": {
-            u"전체": {
+            u"종합편성채널": {
                 "MBN": 18,
                 u"TV조선": 436,
                 u"채널A": 438,
@@ -919,7 +919,14 @@ class ScheduleInfo(object):
             schedule = self._schedule.getChanSchedule(self._date,
                                                       self._chanTypeId,
                                                       chanId)
-            linkTmpl = self._daumChanId2nateChanLinkTmpl[chanId]
+            try:
+                linkTmpl = self._daumChanId2nateChanLinkTmpl[chanId]
+            except KeyError:
+                self._logger.warn("Auxiliary schedule not available: "
+                                  "chanName={}, chanId={}".format(chanName,
+                                                                  chanId))
+                continue
+
             auxSchedule = self._auxSchedule.getChanSchedule(self._date,
                                                             linkTmpl)
             fullSchedule = self._combineSchedule(schedule, auxSchedule)
