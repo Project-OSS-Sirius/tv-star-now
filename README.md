@@ -7,5 +7,5 @@
 
 ### 개발 환경
 * Python with Flask framework and MongoDB  
-* Virtual Private Server(single CPU, SSD 30GB, 1 GB mem) with Ubuntu 13.10  
+* Virtual Private Server (single CPU, SSD 30GB, 1 GB mem) with Ubuntu 13.10  
 * Mac mini (2.5 GHz Intel I5 dual core CPU, 4 GB mem) with OS X 10.9
