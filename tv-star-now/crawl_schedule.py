@@ -24,7 +24,7 @@ def parseCmdLineArgs():
                                                  __copyright__))
 
     parser.add_argument("--date", dest="date", required=True,
-                        help="broadcasting data")
+                        help="destination date")
     parser.add_argument("--chan-type", dest="chanType", required=True,
                         help="channel type")
     parser.add_argument("--chan-cat", dest="chanCat", required=True,

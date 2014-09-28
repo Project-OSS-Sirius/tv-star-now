@@ -103,7 +103,6 @@ def insertProgramCelebs(programsColl, celebritiesColl, progInfo):
 
     programInfo = ProgramInfo(logging.DEBUG)
     progBasicInfo, celebs = programInfo.getProgBasicInfoCelebs(progInfo)
-    print(progBasicInfo)
 
     programsColl.save(progBasicInfo)
 
@@ -111,7 +110,6 @@ def insertProgramCelebs(programsColl, celebritiesColl, progInfo):
     # Need to run how to upsert.
 
     for celeb in celebs:
-        print(celeb)
         celebritiesColl.update({"name": celeb["name"]},
                                {"$inc": {"appearCount": celeb["appearCount"]}},
                                safe=True, upsert=True)

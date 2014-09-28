@@ -9,8 +9,10 @@ __desc__ = "Update TV schedule and program information"
 
 
 import argparse
+import logging
 import ujson
 import pymongo
+import tvinfo
 from restapi.util import str2dateTime
 
 
@@ -30,44 +32,115 @@ def parseCmdLineArgs():
     parser.add_argument("--port", type=int, default=27017, dest="port",
                         help="MongoDB port")
     parser.add_argument("--date", dest="date", required=True,
-                        help="target date")
+                        help="destination date")
+    parser.add_argument("--chan-type", dest="chanType", required=True,
+                        help="channel type")
+    parser.add_argument("--chan-cat", dest="chanCat", required=True,
+                        help="channel category")
     args = parser.parse_args()
 
     return args
 
 
-def main(host, port, scheduleFiles):
+def crawlSchedule(date, chanType, chanCat):
     """
-    Update TV schedule and program information
+    Crawl TV schedule for one week that the destiation date belongs.
+    """
+
+    tvInfo = tvinfo.ScheduleInfo(logging.DEBUG)
+    tvInfo.setDate(date)
+    tvInfo.setChanTypeCat(chanType, chanCat)
+    schedule = tvInfo.digSchedule()
+
+    return schedule
+
+
+def updateSchedule(host, port, schedule):
+    """
+    Update schedule.
     """
 
     client = pymongo.MongoClient(host=host, port=port)
     db = client["tv-star-now"]
-
-    # Create "schedule" collection if not exists.
-    if "schedule" not in db.collection_names():
-        db.create_collection("schedule")
-
     coll = db["schedule"]
 
-    # Create index
-    coll.ensure_index("date")
-    coll.ensure_index("time")
-    coll.ensure_index("dateTime")
+    for scheduleItem in schedule:
+        # Add datetime object property
+        dateStr = scheduleItem["date"]
+        timeStr = scheduleItem["time"]
+        scheduleItem["dateTime"] = str2dateTime(dateStr, timeStr)
 
-    for scheduleFile in scheduleFiles:
-        print("Inserting data from {}".format(scheduleFile.name))
+        # Upsert
+        coll.save(scheduleItem)
 
-        for line in scheduleFile:
-            scheduleItem = ujson.loads(line.strip())
+    client.close()
 
-            # Add datetime object property
-            dateStr = scheduleItem["date"]
-            timeStr = scheduleItem["time"]
-            scheduleItem["dateTime"] = str2dateTime(dateStr, timeStr)
 
-            # Upsert
-            coll.save(scheduleItem)
+def updateProgInfo(host, port, schedule):
+    """
+    Update program information.
+    """
+
+    client = pymongo.MongoClient(host=host, port=port)
+    db = client["tv-star-now"]
+    programsColl = db["programs"]
+    episodesColl = db["episodes"]
+    celebsColl = db["celebrities"]
+
+    programIds = [s["programId"] for s in schedule]
+    programIds = list(set(programIds))
+
+    for programId in programIds:
+        result = programsColl.find_one({"programId": programId})
+
+        if not result:
+            programInfo = crawlProgramInfo(programId)
+            putProgramInfo(programsColl, episodesColl, celebsColl,
+                           programInfo)
+
+    ProgramIdEpisodeNums = [(s["programId"], s["episodeNum"])
+                            for s in schedule]
+
+    ProgramIdEpisodeNums = list(set(ProgramIdEpisodeNums))
+
+    for programId, episodeNum in ProgramIdEpisodeNums:
+        if not episodeNum:
+            continue
+
+        query = {
+            "programId": programId,
+            "episodeNum": episodeNum
+        }
+
+        result = episodesColl.find_one(query)
+
+        if not result:
+            episodes = crawlRecentEpisodes(programId)
+
+            if episodes:
+                putEpisodes(programsColl, episodesColl, celebsColl, episodes)
+
+
+def crawlProgramInfo(programId):
+    """
+    crawl single program information.
+    """
+
+    tvInfo = tvinfo.ProgramInfo()
+
+
+def main(host, port, date, chanType, chanCat):
+    """
+    Update TV schedule and program information
+    """
+
+    print("Crawling schedule.")
+    schedule = crawlSchedule(date, chanType, chanCat)
+    print("Updating schedule.")
+    updateSchedule(host, port, schedule)
+    print("Updating program information.")
+    updateProgInfo(host, port, schedule)
+
 
 #
 # main
@@ -76,4 +149,4 @@ def main(host, port, scheduleFiles):
 
 if __name__ == "__main__":
     args = parseCmdLineArgs()
-    main(args.host, args.port, args.scheduleFiles)
+    main(args.host, args.port, args.date, args.chanType, args.chanCat)

@@ -828,12 +828,12 @@ class ScheduleInfo(object):
         579: "tv_week_2_549_{}-{}-{}.html"
     }
 
-    def __init__(self):
+    def __init__(self, logLevel=logging.INFO):
         """
         Initialize members.
         """
 
-        self._setLogger()
+        self._setLogger(logLevel)
         self._startTime = time.time()
         self._schedule = Schedule()
         self._auxSchedule = AuxSchedule()
@@ -849,7 +849,7 @@ class ScheduleInfo(object):
         self._logger.info("Total elapsed time: %02d:%02d:%02d" %
                           (hours, mins, secs))
 
-    def _setLogger(self):
+    def _setLogger(self, logLevel):
         """
         Set logger.
         """
@@ -861,7 +861,7 @@ class ScheduleInfo(object):
         handler.setFormatter(formatter)
 
         self._logger = logging.getLogger(__file__)
-        self._logger.setLevel(logging.INFO)
+        self._logger.setLevel(logLevel)
         self._logger.addHandler(handler)
         self._logger.propagate = 0
 
@@ -940,6 +940,45 @@ class ScheduleInfo(object):
                 }
                 self._writeChanSchedule(chanSchedule)
 
+    def digSchedule(self):
+        """
+        Dig TV schedule.
+        """
+
+        dugSchedule = []
+        numChans = len(self._chanNameIds)
+
+        for i, chanName in enumerate(sorted(self._chanNameIds), 1):
+            chanId = self._chanNameIds[chanName]
+            self._logger.info("Fetching schedule information: chanName={}, "
+                              "chanId={} ({}/{})".format(chanName, chanId, i,
+                                                         numChans))
+            schedule = self._schedule.getChanSchedule(self._date,
+                                                      self._chanTypeId,
+                                                      chanId)
+            try:
+                linkTmpl = self._daumChanId2nateChanLinkTmpl[chanId]
+            except KeyError:
+                self._logger.warn("Auxiliary schedule not available: "
+                                  "chanName={}, chanId={}".format(chanName,
+                                                                  chanId))
+                continue
+
+            auxSchedule = self._auxSchedule.getChanSchedule(self._date,
+                                                            linkTmpl)
+            fullSchedule = self._combineSchedule(schedule, auxSchedule)
+
+            for scheduleElem in fullSchedule:
+                chanSchedule = {
+                    "channelName": chanName,
+                    "channelId": chanId,
+                    "date": scheduleElem["date"],
+                    "schedule": scheduleElem["daySchedule"]
+                }
+                dugSchedule.extend(self._decompChanSchedule(chanSchedule))
+
+        return dugSchedule
+
     def _combineSchedule(self, schedule, auxSchedule):
         """
         Combine main and auxiliary schedules.
@@ -998,3 +1037,18 @@ class ScheduleInfo(object):
                                                              ensure_ascii=
                                                              False)))
         self._outputFile.flush()
+
+    def _decompChanSchedule(self, chanSchedule):
+        """
+        Decompose schedule into a list.
+        """
+
+        decSchedule = []
+
+        for scheduleItem in chanSchedule["schedule"]:
+            scheduleItem["channelId"] = chanSchedule["channelId"]
+            scheduleItem["channelName"] = chanSchedule["channelName"]
+            scheduleItem["date"] = chanSchedule["date"]
+            decSchedule.append(scheduleItem)
+
+        return decSchedule
