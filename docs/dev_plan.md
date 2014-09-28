@@ -21,19 +21,12 @@ TV Star Now는 일반적인 방송 일정표 검색에 출연자 검색을 추�
 
 ![](image/api_service.jpg?raw=true)
 
-### 메뉴 구성도
-
-해당 없음
-
 ### 개발언어
 
-Python with Flask framework and MongoDB
+* Python with Flask framework and MongoDB  
 
 ### 사용 시스템
 
-개발 머신: Mac mini (2.5 GHz Intel I5 dual core CPU, 4 GB mem) with OS X 10.9
-개발 서버: Virtual Private Server(single CPU, SSD 30GB, 1 GB mem) with Ubuntu 13.10
+*  개발 머신: Mac mini (2.5 GHz Intel I5 dual core CPU, 4 GB mem) with OS X 10.9  
+* 개발 서버: Virtual Private Server(single CPU, SSD 30GB, 1 GB mem) with Ubuntu 13.10  
 
-### 투입 참여 인원과 업무분장
-
-이환호: 시스템 설계 및 개발, 문서화
