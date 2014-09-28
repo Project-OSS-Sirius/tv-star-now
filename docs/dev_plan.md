@@ -14,10 +14,10 @@ TV Star Now는 일반적인 방송 일정표 검색에 출연자 검색을 추�
 
 이 시스템의 구성은 다음과 같다.
 
-(1) 데이터 초기화 모듈(Data Initialization Module): 초기 데이터 구축
-(2) 데이터 갱신 모듈(Data Update Module): 서비스 데이터 갱신
-(3) API 모듈(API Module): 클라이언트로부터 질의 수신 및 데이터베이스 조회 결과 전송
-(4) 데이터베이스(Database): 연예인, 프로그램, 에피소드, 방송 일정 저장
+1. 데이터 초기화 모듈(Data Initialization Module): 초기 데이터 구축  
+2. 데이터 갱신 모듈(Data Update Module): 서비스 데이터 갱신  
+3. API 모듈(API Module): 클라이언트로부터 질의 수신 및 데이터베이스 조회 결과 전송  
+4. 데이터베이스(Database): 연예인, 프로그램, 에피소드, 방송 일정 저장  
 
 ![](image/api_service.jpg?raw=true)
 
