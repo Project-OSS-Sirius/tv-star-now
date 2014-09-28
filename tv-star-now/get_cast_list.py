@@ -5,14 +5,12 @@
 __author__ = "Hwanho Lee"
 __email__ = "hanwho633@naver.com"
 __copyright__ = "Copyright (c) 2014 by Hwanho Lee"
-__desc__ = "Load crawled TV program information into MongoDB"
+__desc__ = "Get cast (and guest) list from TV program information file"
 
 
-import sys
 import argparse
+import collections
 import ujson
-from pymongo import Connection
-from pymongo.erros import ConnectionFailure
 
 
 def parseCmdLineArgs():
@@ -33,32 +31,37 @@ def parseCmdLineArgs():
     return args
 
 
+def getSecondElem(seq):
+    """
+    Get the second element of give sequence.
+    """
+
+    return seq[1]
+
+
 def main(progInfoFileName):
     """
-    Load crawled TV program information into MongoDB
+    Get cast (and guest) list from TV program information file.
     """
 
-    # Connect to DB
-    try:
-        conn = Connection(host="localhost", port=21017)
-    except ConnectionFailure as e:
-        sys.stderr.write("cannot connect to MongoDB: {}".format(e))
+    castCount = collections.Counter()
 
-    # Get handle of collection
-    handle = conn["tv-star-now"]
-
-    # Insert data
     with open(progInfoFileName, "r", encoding="utf-8") as progInfoFile:
         for line in progInfoFile:
             progInfo = ujson.loads(line.strip())
-            handle.programs.insert(progInfo, safe=True)
+            if not progInfo["cast"]:
+                continue
+            for member in progInfo["cast"]:
+                castCount[member] += 1
+            if not progInfo["episodes"]:
+                continue
+            for episode in progInfo["episodes"]:
+                for member in episode["episodeGuests"]:
+                    castCount[member] += 1
 
-    # Create index
-    handle.programs.create_index("programId")
-    handle.programs.create_index("cast")
-    handle.programs.create_index("episodes.episodeNum")
-    handle.programs.create_index("episodes.episodeGuests")
-
+    for member, count in sorted(castCount.items(), key=getSecondElem,
+                                reverse=True):
+        print("{}\t{}".format(member, count))
 
 #
 # main

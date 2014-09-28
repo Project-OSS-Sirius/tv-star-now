@@ -181,20 +181,10 @@ def getThisMonday(date):
     curDate = datetime.date(int(year), int(mon), int(day))
     curWeekDay = curDate.isoweekday()
 
-    # If current date is Monday,
-    # just return the date.
-
     if curWeekDay == 1:
         return date
 
-    # if current date is Sunday,
-    # return the next day.
-    # Otherwise, return the Monday of this week.
-
-    if curWeekDay == 7:
-        monDate = curDate + datetime.timedelta(days=1)
-    else:
-        monDate = curDate - datetime.timedelta(days=curWeekDay-1)
+    monDate = curDate - datetime.timedelta(days=curWeekDay-1)
 
     return monDate.strftime("%Y%m%d")
 
@@ -234,6 +224,11 @@ def getThisWeekSunSatDateTime(date):
     year, mon, day = splitDate(date)
     curDateTime = datetime.datetime(int(year), int(mon), int(day))
     curWeekDay = curDateTime.isoweekday()
+
+    if curWeekDay == 7:
+        satDateTime = curDateTime + datetime.timedelta(days=6)
+        return curDateTime, satDateTime
+
     sunDateTime = curDateTime - datetime.timedelta(days=curWeekDay)
     satDateTime = sunDateTime + datetime.timedelta(days=6)
 

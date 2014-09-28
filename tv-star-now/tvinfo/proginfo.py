@@ -3,6 +3,7 @@
 
 import logging
 import time
+import collections
 import ujson
 from .daumtv import Programs
 
@@ -55,12 +56,12 @@ class ProgramInfo(object):
     _minRatingAverage = 0.0
     _maxRatingAverage = 10.0
 
-    def __init__(self):
+    def __init__(self, logLevel=logging.INFO):
         """
         Initialize members.
         """
 
-        self._setLogger()
+        self._setLogger(logLevel)
         self._startTime = time.time()
         self._programs = Programs()
 
@@ -75,7 +76,7 @@ class ProgramInfo(object):
         self._logger.info("Total elapsed time: %02d:%02d:%02d" %
                           (hours, mins, secs))
 
-    def _setLogger(self):
+    def _setLogger(self, logLevel):
         """
         Set logger.
         """
@@ -87,7 +88,7 @@ class ProgramInfo(object):
         handler.setFormatter(formatter)
 
         self._logger = logging.getLogger(__file__)
-        self._logger.setLevel(logging.INFO)
+        self._logger.setLevel(logLevel)
         self._logger.addHandler(handler)
         self._logger.propagate = 0
 
@@ -155,6 +156,7 @@ class ProgramInfo(object):
         page = 1
         lastPageNum = 0
         numProgs = 0
+        numFilteredProgs = 0
 
         while True:
             if page == 1:
@@ -184,6 +186,7 @@ class ProgramInfo(object):
                 program = self._addCastInfo(program)
                 program = self._addEpisodeInfo(program)
                 self._writeProgramInfo(program)
+                numFilteredProgs += 1
 
             lastPageNum = result["lastPageNum"]
 
@@ -195,7 +198,7 @@ class ProgramInfo(object):
         self._logger.info("Total number of fetched programs: "
                           "{}".format(numProgs))
         self._logger.info("Total number of filtered-in programs: "
-                          "{}".format(len(self._programInfo)))
+                          "{}".format(numFilteredProgs))
 
     def _addCastInfo(self, program):
         """
@@ -253,3 +256,67 @@ class ProgramInfo(object):
                                                          ensure_ascii=
                                                          False)))
         self._outputFile.flush()
+
+    def getProgBasicInfoCelebs(self, program):
+        """
+        Get program basic information and celebrities.
+        """
+
+        if not program["cast"]:
+            program["cast"] = []
+
+        progBasicInfo = {
+            "mainCatName": program["mainCatName"],
+            "subCatName": program["subCatName"],
+            "cast": program["cast"],
+            "ratingAverage": program["ratingAverage"],
+            "programId": program["programId"],
+            "programTitle": program["title"]
+        }
+
+        celebrities = []
+        for member in progBasicInfo["cast"]:
+            celebrities.append({"name": member, "appearCount": 1})
+
+        return progBasicInfo, celebrities
+
+    def getEpisodesCelebs(self, program):
+        """
+        Decompose a program information item and return episodes and
+        celebrities.
+        """
+
+        if not program["episodes"]:
+            return None, None
+
+        celebCount = collections.Counter()
+        episodes = []
+        celebrities = []
+
+        if not program["cast"]:
+            program["cast"] = []
+
+        for episode in program["episodes"]:
+            if not episode["episodeGuests"]:
+                episode["episodeGuests"] = []
+
+            newEpisode = {
+                "programTitle": program["title"],
+                "programId": program["programId"],
+                "cast": program["cast"],
+                "guests": episode["episodeGuests"],
+                "mainCategory": program["mainCatName"],
+                "subCategory": program["subCatName"],
+                "channelName": program["channelName"],
+                "episodeNum": episode["episodeNum"],
+                "episodeDate": episode["episodeDate"]
+            }
+            episodes.append(newEpisode)
+
+            for celeb in newEpisode["guests"]:
+                celebCount[celeb] += 1
+
+        for celeb, count in celebCount.items():
+            celebrities.append({"name": celeb, "appearCount": count})
+
+        return episodes, celebrities
