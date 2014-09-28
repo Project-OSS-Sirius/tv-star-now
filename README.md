@@ -11,3 +11,7 @@
 * Python with Flask framework and MongoDB  
 * Virtual Private Server (single CPU, SSD 30GB, 1 GB mem) with Ubuntu 13.10  
 * Mac mini (2.5 GHz Intel I5 dual core CPU, 4 GB mem) with OS X 10.9
+
+### 라이선스
+
+이 소프트웨어는 [Apache License, Version 2.0](http://opensource.org/licenses/apache2.0.php)을 따른다.
