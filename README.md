@@ -12,7 +12,13 @@
 * Virtual Private Server (single CPU, SSD 30GB, 1 GB mem) with Ubuntu 13.10  
 * Mac mini (2.5 GHz Intel I5 dual core CPU, 4 GB mem) with OS X 10.9
 
-### License
+
+### TODO
+
+* 초기 자료 수집, 저장과 갱신 수정: 데이터 수집과 저장에서 사용하는 구조가 바뀌어 코드가 복집해진 것을 수정하여 단순화할 것. 
+* 추가 문서화: 시스템 세부 기술 설계 기술
+
+### 라이선스
 
 The MIT License (MIT)
 
