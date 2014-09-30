@@ -4,7 +4,7 @@
 
 ### 설치
 
-* TV Star Now 설치
+#### TV Star Now 설치
 
 [github 저장소](https://github.com/Project-OSS-Sirius/tv-star-now)에서 TV Star Now를 복제한다.
 
@@ -12,7 +12,7 @@
 $ git clone git@github.com:Project-OSS-Sirius/tv-star-now.git
 ```
 
-* MongoDB 설치
+#### MongoDB 설치
 
 우분투 리눅스 패키지 관리자로 MongoDB를 설치한다.
 
@@ -20,7 +20,7 @@ $ git clone git@github.com:Project-OSS-Sirius/tv-star-now.git
 $ sudo apt-get install mongodb
 ```
 
-* 파이썬 패키지 설치
+#### 파이썬 패키지 설치
 
 TV Star Now의 작동에 필요한 파이썬 패키지들을 설치한다. TV Star Now는 파이썬 3.4를 이용하여 개발하고 있다.
 
@@ -44,7 +44,7 @@ $ sudo pip3 install --upgrade six
 
 ### 초기 데이터 수집
 
-* 방송 일정(schedule) 수집
+#### 방송 일정(schedule) 수집
 
 이 작업은 초기 데이터 수집 과정이므로 한 번만 수행하면 된다. 여기서는 데모를 위해 일정 범주의 프로그램들에 대한 일정만 수집한다.
 
@@ -79,7 +79,7 @@ Copyright (c) 2014 by Hwanho Lee
 
 개별 명령행 인자는 위에서 충분히 설명된다. 채널 유형(channel type)과 범주(channel category)는 `tv-star-now/tvinfo/scheduleinfo.py`를 참고하기 바란다.
 
-* 프로그램 정보(program information) 수집
+#### 프로그램 정보(program information) 수집
 
 프로그램 정보는 방송 프로그램과 에피소드, 그리고 출연자 정보를 포함한다. 데모를 위해 연예/오락 범주 프로그램들에 대한 정보만 수집한다.
 
@@ -117,7 +117,7 @@ Copyright (c) 2014 by Hwanho Lee
 
 위에서 수집한 초기 데이터를 MongoDB에 적재한다.
 
-* 방송 일정(schedule) 적재
+#### 방송 일정(schedule) 적재
 
 ``` shell-session
 $ ./insert_schedule.py --schedule-files schedule.20140927.*.txt
@@ -146,7 +146,7 @@ Copyright (c) 2014 by Hwanho Lee
 `--host`의 기본값은 `localhost`이며 `--port`의 기본값은 27017이다. `--schedule-files` 인자로 방송 일정 파일 여러 개를 지정할 수 있다.
 
 
-* 프로그램 정보(program information) 적재
+#### 프로그램 정보(program information) 적재
 
 ``` shell-session
 $ ./insert_prog_info.py --prog-files programinfo.140927.txt
@@ -211,3 +211,13 @@ Copyright (c) 2014 by Hwanho Lee
 ### 동작 확인 및 실험
 
 웹브라우저로 http://[도메인명 혹은 IP 주소]:5000에 접속하면 API 서비스에서 지원되는 자료 접근 방법을 볼 수 있으며, 직접 실험도 가능하다.
+
+### 그밖
+
+* 자료 갱신 모듈(`update_schedule_prog_info.py`)은 아직 완성되지 않았음.
+* 다음과 같은 편의 스크립트가 존재함.
+  * `drop_schedule.py`: 데이터베이스에서 `schedule` 콜렉션 삭제
+  * `drop_programs.py`: 데이터베이스에서 `programs` 콜렉션 삭제
+  * `drop_episodes.py`: 데이터베이스에서 `episodes` 콜렉션 삭제
+  * `drop_celebrities.py`: 데이터베이스에서 `celebrities` 콜렉션 삭제
+  * `pretty_json_doc.py`: 각 줄이 JSON으로 된 텍스트 파일을 들여쓰기가 된 읽기 좋은 형태로 변환
